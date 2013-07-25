@@ -37,7 +37,14 @@ function initMap(){
     map.addControl(drawControl);
 
     map.on('draw:created', function (e) {
-        layers.drawnItems.addLayer(e.layer);
+        layers.drawnItems.addLayer(e.layer,{
+            success: function(res){
+                console.log("map.js add success function");
+            },
+            failure: function(res){
+                console.log("map.js add failure function");
+            }
+        });
     });
     map.on('draw:edited', function (e) {
         layers.drawnItems.wfstSave(e.layers);
