@@ -1,3 +1,14 @@
+/*
+ *  Leaflet.wfst.js a WFS-T plugin for Leaflet.js
+ *  (c) 2013, Michael Moore
+ *
+ * Many thanks to georepublic.info for enough info to get up and running: http://blog.georepublic.info/2012/leaflet-example-with-wfs-t/
+ */
+
+
+
+
+
 L.WFST = L.GeoJSON.extend({
 
     // These functions overload the parent (GeoJSON) functions with some WFS-T
@@ -105,7 +116,20 @@ L.WFST = L.GeoJSON.extend({
     _wfstAdd: function(layer,options){
         console.log("Adding");
 
-        options = options || {};
+        options = L.extend({
+            success: function(res){
+                if(typeof options.success == 'function' && self._wfstSuccess(res)){
+                    options.success(res);
+                }else if(typeof options.failure == 'function'){ 
+                    options.failure(res);
+                }
+                },
+            failure: function(res){
+                console.log("A real http failure! Geoserver gives us 200 status and an ows:ExceptionReport if it fails");
+                console.log(res);
+            }
+        },options);
+
 
         var xml = this.options._xmlpre;
 
@@ -115,6 +139,8 @@ L.WFST = L.GeoJSON.extend({
         xml += "</" + this.typename + ">";
         xml += "</wfs:Insert>";
         xml += "</wfs:Transaction>";
+
+        console.log(xml);
 
         this._ajax( L.extend({method:'POST', data:xml},options));
     },
@@ -193,6 +219,7 @@ L.WFST = L.GeoJSON.extend({
             url: this.options.url
         },options);
 
+        self = this;
         var xmlhttpreq = (window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP'));
         xmlhttpreq.onreadystatechange=function() {
             if(xmlhttpreq.readyState==4){
@@ -315,6 +342,20 @@ L.WFST = L.GeoJSON.extend({
         }
 
         return found;
+    },
+
+    _wfstSuccess: function(res){
+        if(typeof res == 'string'){
+            var xml = self._parseXml(res);
+        }
+        console.log("WFST Success");
+        console.log(res);
+        var exception = self._getElementsByTagName(xml,'ows:ExceptionReport');
+        if(exception.length > 0){ 
+            console.log(self._getElementsByTagName(xml,'ows:ExceptionText')[0].firstChild.nodeValue);
+            return false;
+        }
+        return xml;
     }
 
     // Todo: create/handle onchange?
