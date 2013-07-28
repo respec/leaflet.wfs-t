@@ -21,10 +21,10 @@ function initMap(){
         url : 'http://localhost/geoserver/wfsttest/wfs',
         featureNS : 'wfsttest',
         featureType : 'doodles',
+        primaryKeyField: 'id',
 
         // Optional
         failure: function(msg){console.log(msg);}
-
     }).addTo(map);
 
     // Initialize the draw control and pass it the FeatureGroup of editable layers
@@ -35,6 +35,8 @@ function initMap(){
     });
 
     map.addControl(drawControl);
+
+
 
     map.on('draw:created', function (e) {
         layers.drawnItems.addLayer(e.layer,{
@@ -47,6 +49,23 @@ function initMap(){
         });
     });
     map.on('draw:edited', function (e) {
-        layers.drawnItems.wfstSave(e.layers);
+        layers.drawnItems.wfstSave(e.layers,{
+            success: function(res){
+                console.log("map.js save success function");
+            },
+            failure: function(res){
+                console.log("map.js save failure function");
+            }
+        });
+    });
+    map.on('draw:deleted', function (e) {
+        layers.drawnItems.wfstRemove(e.layers,{
+            success: function(res){
+                console.log("map.js remove success function");
+            },
+            failure: function(res){
+                console.log("map.js remove failure function");
+            }
+        });
     });
 }
