@@ -74,7 +74,6 @@ L.WFST = L.GeoJSON.extend({
         }
     },
     wfstRemove: function(layers,options){
-        console.log("Save layers now!");
         options = options || {};
         layers = layers ? (L.Util.isArray(layers) ? layers : [layers]) : [];
 
@@ -83,7 +82,6 @@ L.WFST = L.GeoJSON.extend({
         }
     },
     wfstSave: function(layers,options){
-        console.log("Save layers now!");
         options = options || {};
         realsuccess = options.success;
         layers = layers ? (L.Util.isArray(layers) ? layers : [layers]) : [];
@@ -201,7 +199,6 @@ L.WFST = L.GeoJSON.extend({
 
     //  Save changes to a single layer with WFS-T
     _wfstSave: function(layer,options){
-        console.log("Saving");
 
         if(typeof this.options.primaryKeyField == 'undefined'){
             console.log("I can't do saves without a primaryKeyField!");
@@ -238,8 +235,6 @@ L.WFST = L.GeoJSON.extend({
         xml += this._whereFilter(where);
         xml += "</wfs:Update>";
         xml += "</wfs:Transaction>";
-
-        console.log(xml);
 
         this._ajax( L.extend({method:'POST', data:xml},options));
     },
