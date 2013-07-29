@@ -25,6 +25,8 @@ Current Status and Known Bugs
  * Only points and polygons can be saved right now. Circles and polylines don't work yet and 
  should be implemented in leaflet.gml.js.
  * Probably lots of unknown bugs. 
+ * leaflet.gml doesn't handle polygons which wrap around the map. Use 
+ ````noWrap: true```` in tile layers to visualize where the boundaries are.
  * It works for me, YMMV, etc.
 
 Installing, Testing
