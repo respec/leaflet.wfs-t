@@ -4,33 +4,42 @@
         <meta charset="utf-7">
         <title>WFS-T Leaflet Plugin</title>
 
-        <link rel="stylesheet" href="css/leaflet.css" />
+        <!-- Leaflet 0.6.4 CSS/JS from CDN -->
+        <link type="text/css" rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
+        <!--[if lte IE 8]>
+        <link type="text/css" rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
+        <![endif]-->
+        <script type="text/javascript" src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
 
-        <link rel="stylesheet" href="js/Leaflet.draw/dist/leaflet.draw.css" />
 
-        <script src="js/Leaflet/dist/leaflet-src.js"></script>
+        <!-- Leaflet Draw 0.2.0 (you'll need to download these -->
+        <!-- Point these URLs at your own copy of Leaflet.draw, or run:
 
-        <!-- Load us -->
-        <script type='text/javascript' src="js/Leaflet.draw/dist/leaflet.draw-src.js"></script>
-        <script type='text/javascript' src="js/map.js"></script>
-        <script type='text/javascript' src="js/leaflet.gml.js"></script>
-        <script type='text/javascript' src="js/leaflet.wfst.js"></script>
+        git submodule init
+        git submodule update
 
-        <style type='text/css'>
-            html,body {
-                height: 100%;
-            }
-            #map {
-                min-height: 500px;
-                width: 100%;
-                height: 100%;
-                margin-right: 10px;
-            }
-        </style>
+        to initialize the git submodule
+        -->
+        <link type="text/css" rel="stylesheet" href="js/Leaflet.draw/dist/leaflet.draw.css" />
+        <script type="text/javascript" src="js/Leaflet.draw/dist/leaflet.draw.js"></script>
+        <!--[if lte IE 8]>
+            <link type="text/css" rel="stylesheet" href="js/Leaflet.draw/dist/leaflet.draw.ie.css" />
+        <![endif]-->
+
+        <!-- This is what you're here for! -->
+        <!-- leaflet.gml.js, leaflet.wfst.js -->
+        <script type="text/javascript" src="js/leaflet.gml.js"></script>
+        <script type="text/javascript" src="js/leaflet.wfst.js"></script>
+
+
+        <!-- css and js for demo -->
+        <link type="text/css" rel="stylesheet" href="css/map.css" />
+        <script type="text/javascript" src="js/map.js"></script>
     </head>
     <body>
         <div id="map"></div>
-        <script type='text/javascript'>
+        <script type="text/javascript">
+            // Load the map with the initMap function in map.js
             initMap();
         </script>
     </body>
