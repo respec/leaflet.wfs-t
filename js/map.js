@@ -11,7 +11,8 @@ function initMap(){
         layers: 'wfsttest:world',
         format: 'image/png',
         transparent: true,
-        attribution: "CDC"
+        attribution: "CDC",
+        noWrap: true
     }).addTo(map);
 
     // Initialize the FeatureGroup to store editable layers
@@ -58,14 +59,16 @@ function initMap(){
             }
         });
     });
-    map.on('draw:deleted', function (e) {
-        layers.drawnItems.wfstRemove(e.layers,{
-            success: function(res){
-                console.log("map.js remove success function");
-            },
-            failure: function(res){
-                console.log("map.js remove failure function");
-            }
-        });
-    });
+
+    // It seems that draw:deleted doesn't actually get fired
+    // map.on('draw:deleted', function (e) {
+    //     layers.drawnItems.wfstRemove(e.layers,{
+    //         success: function(res){
+    //             console.log("map.js remove success function");
+    //         },
+    //         failure: function(res){
+    //             console.log("map.js remove failure function");
+    //         }
+    //     });
+    // });
 }

@@ -50,7 +50,6 @@ L.WFST = L.GeoJSON.extend({
         L.GeoJSON.prototype.addLayer.call(this,layer);
     },
     removeLayer: function(layer,options) {
-        console.log("Do wfst remove");
         this.wfstRemove(layer,options);
 
         // Call to parent removeLayer
@@ -124,14 +123,11 @@ L.WFST = L.GeoJSON.extend({
     // Add a single layer with WFS-T
     _wfstAdd: function(layer,options){
 
-        if(
-            typeof layer.feature != 'undefined' && 
+        if(typeof layer.feature != 'undefined' && 
             typeof layer.feature._wfstSaved == 'boolean' && 
         layer.feature._wfstSaved){
             return true; // already saved
         }
-
-        console.log("Adding");
 
         var realsuccess;
         if(typeof options.success == 'function'){
@@ -149,7 +145,6 @@ L.WFST = L.GeoJSON.extend({
                 }
             }
         });
-
 
         var xml = this.options._xmlpre;
 
@@ -160,15 +155,12 @@ L.WFST = L.GeoJSON.extend({
         xml += "</wfs:Insert>";
         xml += "</wfs:Transaction>";
 
-        console.log(xml);
 
         this._ajax( L.extend({method:'POST', data:xml},options));
     },
 
     // Remove a layers with WFS-T
     _wfstRemove: function(layer,options){
-
-
         if(typeof this.options.primaryKeyField == 'undefined'){
             console.log("I can't do deletes without a primaryKeyField!");
             if(typeof options.failure == 'function'){
@@ -176,8 +168,6 @@ L.WFST = L.GeoJSON.extend({
             }
             return false;
         }
-
-        console.log("Removing");
 
         var realsuccess;
         if(typeof options.success == 'function'){
@@ -196,16 +186,14 @@ L.WFST = L.GeoJSON.extend({
             }
         });
 
-        var xml = this.options._xmlpre;
-        xml += "<wfs:Delete typeName='"+this.options.typename+"'>";
-
         var where = {};
         where[this.options.primaryKeyField] = layer.feature.properties[this.options.primaryKeyField];
+
+        var xml = this.options._xmlpre;
+        xml += "<wfs:Delete typeName='"+this.options.typename+"'>";
         xml += this._whereFilter(where);
         xml += "</wfs:Delete>";
         xml += "</wfs:Transaction>";
-
-        console.log(xml);
 
         this._ajax( L.extend({method:'POST', data:xml},options));
     },
@@ -241,12 +229,13 @@ L.WFST = L.GeoJSON.extend({
             }
         });
 
-        var xml = this.options._xmlpre;
+        var where = {};
+        where[this.options.primaryKeyField] = layer.feature.properties[this.options.primaryKeyField];
 
+        var xml = this.options._xmlpre;
         xml += "<wfs:Update typeName='"+this.options.typename+"'>";
-        xml += "<" + this.options.typename + ">";
-        xml += this._wfstSetValues(layer);
-        xml += "</" + this.options.typename + ">";
+        xml += this._wfstUpdateValues(layer);
+        xml += this._whereFilter(where);
         xml += "</wfs:Update>";
         xml += "</wfs:Transaction>";
 
@@ -261,8 +250,41 @@ L.WFST = L.GeoJSON.extend({
     // Build the xml for setting/updating fields
     _wfstSetValues: function(layer){
         var xml = '';
-        var elems = this._fieldsByAttribute();
+        var field = this._wfstValueKeyPairs(layer);
 
+        if(!field){
+            return false;
+        }
+
+        for(var f in field){
+            xml += "<" + this.options.featureNS + ":" + f +">";
+            xml += field[f];
+            xml += "</" + this.options.featureNS + ":" + f +">";
+        }
+
+        return xml;
+    },
+    _wfstUpdateValues: function(layer){
+        var xml = '';
+        var field = this._wfstValueKeyPairs(layer);
+
+        if(!field){
+            return false;
+        }
+
+        for(var f in field){
+            xml += "<wfs:Property><wfs:Name>";
+            xml += f;
+            xml += "</wfs:Name><wfs:Value>";
+            xml += field[f];
+            xml += "</wfs:Value></wfs:Property>";
+        }
+
+        return xml;
+    },
+    _wfstValueKeyPairs: function(layer){
+        var field = {};
+        var elems = this._fieldsByAttribute();
         var geomFields = [];
 
         for(var p = 0;p < elems.length;p++){
@@ -277,9 +299,7 @@ L.WFST = L.GeoJSON.extend({
                     console.log("Null value given for non nillable field: " + attr);
                     return false; // No value given for required field!
                 }else if(layer.feature.properties[attr] !== null){
-                    xml += "<" + this.options.featureNS + ":" + attr +">";
-                    xml += layer.feature.properties[attr];
-                    xml += "</" + this.options.featureNS + ":" + attr +">";
+                    field[attr] = layer.feature.properties[attr]; 
                 }else{
                     // Not sure what to do with null values yet. 
                     // At the very least Geoserver isn't liking null where a date should be.
@@ -296,15 +316,13 @@ L.WFST = L.GeoJSON.extend({
 
         if(this.options.geomField || geomFields.length === 1){
             this.options.geomFields = this.options.geomField || geomFields[0];
-
-            xml += "<" + this.options.featureNS + ":" + attr +">";
-            xml += layer.toGML();
-            xml += "</" + this.options.featureNS + ":" + attr +">";
+            field[attr] = layer.toGML();
         }else{
             console.log("No geometry field!");
             return false;
         }
-        return xml;
+
+        return field;
     },
     // Make WFS-T filters for deleting/updating specific items
     _whereFilter: function(where){
