@@ -15,17 +15,13 @@ function initMap(){
         noWrap: true
     }).addTo(map);
 
-    // Initialize the FeatureGroup to store editable layers
+    // Initialize the WFST layer to store editable layers
     layers.drawnItems = L.wfst(null,{
-
         // Required
         url : 'http://localhost/geoserver/wfsttest/wfs',
         featureNS : 'wfsttest',
         featureType : 'doodles',
-        primaryKeyField: 'id',
-
-        // Optional
-        failure: function(msg){console.log(msg);}
+        primaryKeyField: 'id'
     }).addTo(map);
 
     // Initialize the draw control and pass it the FeatureGroup of editable layers
@@ -37,38 +33,10 @@ function initMap(){
 
     map.addControl(drawControl);
 
-
-
     map.on('draw:created', function (e) {
-        layers.drawnItems.addLayer(e.layer,{
-            success: function(res){
-                console.log("map.js add success function");
-            },
-            failure: function(res){
-                console.log("map.js add failure function");
-            }
-        });
+        layers.drawnItems.addLayer(e.layer);
     });
     map.on('draw:edited', function (e) {
-        layers.drawnItems.wfstSave(e.layers,{
-            success: function(res){
-                console.log("map.js save success function");
-            },
-            failure: function(res){
-                console.log("map.js save failure function");
-            }
-        });
+        layers.drawnItems.wfstSave(e.layers);
     });
-
-    // It seems that draw:deleted doesn't actually get fired
-    // map.on('draw:deleted', function (e) {
-    //     layers.drawnItems.wfstRemove(e.layers,{
-    //         success: function(res){
-    //             console.log("map.js remove success function");
-    //         },
-    //         failure: function(res){
-    //             console.log("map.js remove failure function");
-    //         }
-    //     });
-    // });
 }

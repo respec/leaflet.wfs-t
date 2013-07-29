@@ -5,10 +5,6 @@
 * Many thanks to georepublic.info for enough info to get up and running: http://blog.georepublic.info/2012/leaflet-example-with-wfs-t/
 */
 
-
-
-
-
 L.WFST = L.GeoJSON.extend({
 
     // These functions overload the parent (GeoJSON) functions with some WFS-T
