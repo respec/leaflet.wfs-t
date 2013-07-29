@@ -4,9 +4,10 @@ var drawControl;
 
 function initMap(){
     // create a map in the "map" div, set the view to a given place and zoom
-    map = L.map('map').setView([45, -93], 3);
+    map = L.map('map').setView([0,0], 2);
 
     // Set the map background to our WMS layer of the world boundaries
+    // Replace this with your own background layer
     layers.world = L.tileLayer.wms("/geoserver/wfsttest/wms", {
         layers: 'wfsttest:world',
         format: 'image/png',
@@ -15,10 +16,10 @@ function initMap(){
         noWrap: true
     }).addTo(map);
 
-    // Initialize the WFST layer to store editable layers
+    // Initialize the WFST layer 
     layers.drawnItems = L.wfst(null,{
         // Required
-        url : 'http://localhost/geoserver/wfsttest/wfs',
+        url : '/geoserver/wfsttest/wfs',
         featureNS : 'wfsttest',
         featureType : 'doodles',
         primaryKeyField: 'id'
