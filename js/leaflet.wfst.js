@@ -99,13 +99,15 @@ L.WFST = L.GeoJSON.extend({
         console.log("Save layers now!");
 
         for (var i = 0, len = layers.length; i < len; i++) {
-            layers[i].properties._wfstSaved = false;
+            layers[i]._wfstSaved = false;
         }
     },
-    wfstSaveDirty: function(){
-        for (var i = 0, len = layers.length; i < len; i++) {
-            if(layers[i].properties._wfstSaved === false){
-                this.wfstSave(layers[i]);
+    wfstSaveDirty: function(options){
+        for(var i in self._layers){
+            if(typeof self._layers[i].feature._wfstSaved == 'undefined'){
+                this._wfstAdd(self._layers[i],options);
+            }else if(self._layers[i].feature._wfstSaved === false){
+                this._wfstSave(self._layers[i],options);
             }
         }
     },
@@ -195,7 +197,6 @@ L.WFST = L.GeoJSON.extend({
 
     //  Save changes to a single layer with WFS-T
     _wfstSave: function(layer,options){
-
         if(typeof this.options.primaryKeyField == 'undefined'){
             console.log("I can't do saves without a primaryKeyField!");
             if(typeof options.failure == 'function'){
@@ -264,11 +265,12 @@ L.WFST = L.GeoJSON.extend({
         }
 
         for(var f in field){
-            xml += "<wfs:Property><wfs:Name>";
-            xml += f;
-            xml += "</wfs:Name><wfs:Value>";
-            xml += field[f];
-            xml += "</wfs:Value></wfs:Property>";
+            if(field[f] !== null && field[f] !== ''){
+                xml += "<wfs:Property>";
+                xml += "<wfs:Name>" + f + "</wfs:Name>";
+                xml += "<wfs:Value>" + field[f] + "</wfs:Value>";
+                xml += "</wfs:Property>";
+            }
         }
 
         return xml;
@@ -419,10 +421,10 @@ L.WFST = L.GeoJSON.extend({
         _xmlpre += '<wfs:Transaction service="WFS" version="1.1.0"'; 
         _xmlpre += ' xmlns:wfs="http://www.opengis.net/wfs"';
         _xmlpre += ' xmlns:gml="http://www.opengis.net/gml"';
-        _xmlpre += ' xmlns:' + this.options.featureNS + '="' + this.options.featureNS + '"';
+        _xmlpre += ' xmlns:' + this.options.featureNS + '="' + this._getElementsByTagName(this.options.featureinfo,'xsd:schema')[0].getAttribute('targetNamespace') + '"';
         _xmlpre += ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"';
         _xmlpre += ' xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd';
-        _xmlpre += ' ' + this.options.url + '?request=DescribeFeatureType&amp;typename=' + this.options.featureNS;
+        _xmlpre += ' ' + this.options.url + '?request=DescribeFeatureType&amp;typename=' + this.options.featureNS + ':' + this.options.featureType;
         _xmlpre += '">';
 
         this.options._xmlpre = _xmlpre;
