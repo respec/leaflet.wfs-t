@@ -307,12 +307,18 @@ L.WFST = L.GeoJSON.extend({
             }
         }
 
-        if(this.options.geomField || geomFields.length === 1){
-            this.options.geomFields = this.options.geomField || geomFields[0];
-            field[attr] = layer.toGML();
-        }else{
-            console.log("No geometry field!");
-            return false;
+        // Only require a geometry field if it looks like we have geometry but we aren't trying to save it
+        if(
+            (layer.hasOwnProperty('x') && layer.hasOwnProperty('y') && typeof layer.x != 'undefined' && typeof layer.y != 'undefined') ||
+            (layer.hasOwnProperty('_latlngs') && layer._latlngs.length > 0)
+        ){
+            if(this.options.geomField || geomFields.length === 1){
+                this.options.geomFields = this.options.geomField || geomFields[0];
+                field[attr] = layer.toGML();
+            }else{
+                console.log("No geometry field!");
+                return false;
+            }
         }
 
         return field;
