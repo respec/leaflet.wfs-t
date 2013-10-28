@@ -136,9 +136,17 @@ L.WFST = L.GeoJSON.extend({
 
         options = L.extend(options,{
             success: function(res){
-                if(typeof realsuccess == 'function' && self._wfstSuccess(res)){
+                var xml = self._wfstSuccess(res);
+                if(typeof realsuccess == 'function' && xml !== false){
                     layer.feature = layer.feature || {};
                     layer.feature._wfstSaved = true;
+
+                    // Populate the IDs of the object we just inserted. 
+                    // Since we do one insert at a time, it should always be object 0
+                    var fid = self._getElementsByTagName(xml,'ogc:FeatureId')[0].getAttribute('fid');
+                    layer.feature.id = fid;
+                    layer.feature.properties[self.options.primaryKeyField] = fid.replace(self.options.featureType + '.','');
+
                     realsuccess(res);
                 }else if(typeof options.failure == 'function'){ 
                     options.failure(res);
@@ -154,7 +162,6 @@ L.WFST = L.GeoJSON.extend({
         xml += "</" + this.options.typename + ">";
         xml += "</wfs:Insert>";
         xml += "</wfs:Transaction>";
-
 
         this._ajax( L.extend({method:'POST', data:xml},options));
     },
