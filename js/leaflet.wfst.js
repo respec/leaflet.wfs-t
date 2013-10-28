@@ -71,6 +71,10 @@ L.WFST = L.GeoJSON.extend({
     },
     wfstRemove: function(layers,options){
         options = options || {};
+        if(layers === null){
+            this._wfstRemove(null,options);
+        }
+
         layers = layers ? (L.Util.isArray(layers) ? layers : [layers]) : [];
 
         for (var i = 0, len = layers.length; i < len; i++) {
@@ -157,7 +161,7 @@ L.WFST = L.GeoJSON.extend({
 
     // Remove a layers with WFS-T
     _wfstRemove: function(layer,options){
-        if(typeof this.options.primaryKeyField == 'undefined'){
+        if(typeof this.options.primaryKeyField == 'undefined' && typeof options.where == 'undefined'){
             console.log("I can't do deletes without a primaryKeyField!");
             if(typeof options.failure == 'function'){
                 options.failure();
@@ -173,8 +177,10 @@ L.WFST = L.GeoJSON.extend({
         options = L.extend(options,{
             success: function(res){
                 if(typeof realsuccess == 'function' && self._wfstSuccess(res)){
-                    layer.feature = layer.feature || {};
-                    layer.feature._wfstSaved = true;
+                    if(layer !== null){
+                        layer.feature = layer.feature || {};
+                        layer.feature._wfstSaved = true;
+                    }
                     realsuccess(res);
                 }else if(typeof options.failure == 'function'){ 
                     options.failure(res);
@@ -182,8 +188,13 @@ L.WFST = L.GeoJSON.extend({
             }
         });
 
-        var where = {};
-        where[this.options.primaryKeyField] = layer.feature.properties[this.options.primaryKeyField];
+        var where; 
+        if(typeof options.where == 'undefined'){
+            where = {};
+            where[this.options.primaryKeyField] = layer.feature.properties[this.options.primaryKeyField];
+        }else{
+            where = options.where;
+        }
 
         var xml = this.options._xmlpre;
         xml += "<wfs:Delete typeName='"+this.options.typename+"'>";
