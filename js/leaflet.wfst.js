@@ -331,8 +331,8 @@ L.WFST = L.GeoJSON.extend({
             (layer.hasOwnProperty('_latlngs') && layer._latlngs.length > 0)
         ){
             if(this.options.geomField || geomFields.length === 1){
-                this.options.geomFields = this.options.geomField || geomFields[0];
-                field[attr] = layer.toGML();
+                this.options.geomField = this.options.geomField || geomFields[0].getAttribute('name');
+                field[this.options.geomField] = layer.toGML();
             }else{
                 console.log("No geometry field!");
                 return false;
