@@ -315,7 +315,12 @@ L.WFST = L.GeoJSON.extend({
                     // Not sure what to do with null values yet. 
                     // At the very least Geoserver isn't liking null where a date should be.
                 }
-            }else if(elems[p].getAttribute('type') == 'gml:GeometryPropertyType'){
+            }else if(
+                elems[p].getAttribute('type') === 'gml:GeometryPropertyType' || 
+                elems[p].getAttribute('type') === 'gml:GeometryPropertyType' || 
+                elems[p].getAttribute('type') === 'gml:MultiSurfacePropertyType' || 
+                elems[p].getAttribute('type') === 'gml:SurfacePropertyType' 
+            ){
                 geomFields.push(elems[p]);
             }else if(elems[p].getAttribute('nillable') == 'false'){
                 if(elems[p].getAttribute('maxOccurs') != "1" && elems[p].getAttribute('minOccurs') != "1"){
