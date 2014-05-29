@@ -396,7 +396,7 @@ L.WFST = L.GeoJSON.extend({
     Get all existing objects from the WFS service and draw them
     */
     _loadExistingFeatures: function(){
-        var geoJsonUrl = this.options.url + '?service=WFS&version=1.0.0&request=GetFeature&typeName=' + this.options.featureNS + ':' + this.options.featureType + '&outputFormat=application/json';
+        var geoJsonUrl = this.options.url + '?service=WFS&version=' + this.options.version + '&request=GetFeature&typeName=' + this.options.featureNS + ':' + this.options.featureType + '&outputFormat=application/json';
         this._ajax({
             url: geoJsonUrl,
             success: function(res){
@@ -412,7 +412,7 @@ L.WFST = L.GeoJSON.extend({
     Get the feature description
     */
     _loadFeatureDescription: function(){
-        var describeFeatureUrl = this.options.url + '?service=WFS&version=1.0.0&request=DescribeFeatureType&typename=' + this.options.featureNS + ':' + this.options.featureType;
+        var describeFeatureUrl = this.options.url + '?service=WFS&version=' + this.options.version + '&request=DescribeFeatureType&typename=' + this.options.featureNS + ':' + this.options.featureType;
         this._ajax({
             url: describeFeatureUrl,
             success: function(res){
@@ -449,13 +449,13 @@ L.WFST = L.GeoJSON.extend({
 
         var _xmlpre = '';
         _xmlpre = '';
-        _xmlpre += '<wfs:Transaction service="WFS" version="1.1.0"'; 
+        _xmlpre += '<wfs:Transaction service="WFS" version="' + this.options.version + '"'; 
         _xmlpre += ' xmlns:wfs="http://www.opengis.net/wfs"';
         _xmlpre += ' xmlns:gml="http://www.opengis.net/gml"';
         _xmlpre += ' xmlns:' + this.options.featureNS + '="' + this._getElementsByTagName(this.options.featureinfo, this.options.xsdNs + ':schema')[0].getAttribute('targetNamespace') + '"';
         _xmlpre += ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"';
-        _xmlpre += ' xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd';
-        //_xmlpre += ' ' + this.options.url + '?service=WFS&version=1.1.0&request=DescribeFeatureType&typename=' + this.options.featureNS + ':' + this.options.featureType;
+        _xmlpre += ' xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/' + this.options.version + '/wfs.xsd';
+        //_xmlpre += ' ' + this.options.url + '?service=WFS&version=' + this.options.version + '&request=DescribeFeatureType&typename=' + this.options.featureNS + ':' + this.options.featureType;
         _xmlpre += '">';
 
         this.options._xmlpre = _xmlpre;
