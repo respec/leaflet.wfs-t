@@ -16,7 +16,7 @@ L.WFST = L.GeoJSON.extend({
             showExisting: true,         // Show existing features in WFST layer on map?
             version: "1.1.0",           // WFS version 
             failure: function(msg){},    // Function for handling initialization failures
-            xsdNs: 'xsd:'
+            xsdNs: 'xsd'
             // geomField : <field_name> // The geometry field to use. Auto-detected if only one geom field 
             // url: <WFS service URL> 
             // featureNS: <Feature NameSpace>
@@ -452,7 +452,7 @@ L.WFST = L.GeoJSON.extend({
         _xmlpre += '<wfs:Transaction service="WFS" version="1.1.0"'; 
         _xmlpre += ' xmlns:wfs="http://www.opengis.net/wfs"';
         _xmlpre += ' xmlns:gml="http://www.opengis.net/gml"';
-        _xmlpre += ' xmlns:' + this.options.featureNS + '="' + this._getElementsByTagName(this.options.featureinfo, this.options.xsdNs + 'schema')[0].getAttribute('targetNamespace') + '"';
+        _xmlpre += ' xmlns:' + this.options.featureNS + '="' + this._getElementsByTagName(this.options.featureinfo, this.options.xsdNs + ':schema')[0].getAttribute('targetNamespace') + '"';
         _xmlpre += ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"';
         _xmlpre += ' xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd';
         //_xmlpre += ' ' + this.options.url + '?service=WFS&version=1.1.0&request=DescribeFeatureType&typename=' + this.options.featureNS + ':' + this.options.featureType;
@@ -474,11 +474,11 @@ L.WFST = L.GeoJSON.extend({
     },
 
     _fieldsByAttribute: function(attribute,value,max){
-        var seq = this._getElementsByTagName(this.options.featureinfo, this.options.xsdNs + 'sequence')[0];
+        var seq = this._getElementsByTagName(this.options.featureinfo, this.options.xsdNs + ':sequence')[0];
         if(typeof seq == 'undefined'){
             return [];
         }
-        var elems = this._getElementsByTagName(seq, this.options.xsdNs + 'element');
+        var elems = this._getElementsByTagName(seq, this.options.xsdNs + ':element');
         var found = [];
 
         var foundVal;
