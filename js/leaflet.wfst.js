@@ -15,12 +15,14 @@ L.WFST = L.GeoJSON.extend({
         var initOptions = L.extend({
             showExisting: true,         // Show existing features in WFST layer on map?
             version: "1.1.0",           // WFS version 
-            failure: function(msg){}    // Function for handling initialization failures
+            failure: function(msg){},    // Function for handling initialization failures
+            xsdNs: 'xsd'
             // geomField : <field_name> // The geometry field to use. Auto-detected if only one geom field 
             // url: <WFS service URL> 
             // featureNS: <Feature NameSpace>
             // featureType: <Feature Type>
             // primaryKeyField: <The Primary Key field for using when doing deletes and updates>
+            // xsdNs: Namespace used in XSD schemas, XSD returned by TinyOWS uses 'xs:' while GeoServer uses 'xsd:'
         },options);
 
 
@@ -317,7 +319,7 @@ L.WFST = L.GeoJSON.extend({
                 }
             }else if(
                 elems[p].getAttribute('type') === 'gml:GeometryPropertyType' || 
-                elems[p].getAttribute('type') === 'gml:GeometryPropertyType' || 
+                elems[p].getAttribute('type') === 'gml:PointPropertyType' || 
                 elems[p].getAttribute('type') === 'gml:MultiSurfacePropertyType' || 
                 elems[p].getAttribute('type') === 'gml:SurfacePropertyType' 
             ){
@@ -333,7 +335,7 @@ L.WFST = L.GeoJSON.extend({
         // Only require a geometry field if it looks like we have geometry but we aren't trying to save it
         if(
             (layer.hasOwnProperty('x') && layer.hasOwnProperty('y') && typeof layer.x != 'undefined' && typeof layer.y != 'undefined') ||
-            (layer.hasOwnProperty('_latlngs') && layer._latlngs.length > 0)
+            (layer.hasOwnProperty('_latlng') && Object.keys(layer._latlng).length > 0)
         ){
             if(this.options.geomField || geomFields.length === 1){
                 this.options.geomField = this.options.geomField || geomFields[0].getAttribute('name');
@@ -348,14 +350,14 @@ L.WFST = L.GeoJSON.extend({
     },
     // Make WFS-T filters for deleting/updating specific items
     _whereFilter: function(where){
-        var xml = '<' + this.options.featureNS + ':Filter>';
+        var xml = '<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">';
         for(var propertyName in where){
-            xml += '<PropertyIsEqualTo>';
-            xml += '<PropertyName>' + propertyName + '</PropertyName>';
-            xml += '<Literal>' + where[propertyName] + '</Literal>';
-            xml += '</PropertyIsEqualTo>'; 
+            xml += '<ogc:PropertyIsEqualTo>';
+            xml += '<ogc:PropertyName>' + propertyName + '</ogc:PropertyName>';
+            xml += '<ogc:Literal>' + where[propertyName] + '</ogc:Literal>';
+            xml += '</ogc:PropertyIsEqualTo>'; 
         }
-        xml += '</' + this.options.featureNS+ ':Filter>';
+        xml += '</ogc:Filter>';
         return xml;
     },
 
@@ -394,7 +396,7 @@ L.WFST = L.GeoJSON.extend({
     Get all existing objects from the WFS service and draw them
     */
     _loadExistingFeatures: function(){
-        var geoJsonUrl = this.options.url + '?service=WFS&version=1.0.0&request=GetFeature&typeName=' + this.options.featureNS + ':' + this.options.featureType + '&outputFormat=json';
+        var geoJsonUrl = this.options.url + '?service=WFS&version=' + this.options.version + '&request=GetFeature&typeName=' + this.options.featureNS + ':' + this.options.featureType + '&outputFormat=application/json';
         this._ajax({
             url: geoJsonUrl,
             success: function(res){
@@ -410,7 +412,7 @@ L.WFST = L.GeoJSON.extend({
     Get the feature description
     */
     _loadFeatureDescription: function(){
-        var describeFeatureUrl = this.options.url + '?request=DescribeFeatureType&typename=' + this.options.featureNS + ':' + this.options.featureType;
+        var describeFeatureUrl = this.options.url + '?service=WFS&version=' + this.options.version + '&request=DescribeFeatureType&typename=' + this.options.featureNS + ':' + this.options.featureType;
         this._ajax({
             url: describeFeatureUrl,
             success: function(res){
@@ -447,13 +449,13 @@ L.WFST = L.GeoJSON.extend({
 
         var _xmlpre = '';
         _xmlpre = '';
-        _xmlpre += '<wfs:Transaction service="WFS" version="1.1.0"'; 
+        _xmlpre += '<wfs:Transaction service="WFS" version="' + this.options.version + '"'; 
         _xmlpre += ' xmlns:wfs="http://www.opengis.net/wfs"';
         _xmlpre += ' xmlns:gml="http://www.opengis.net/gml"';
-        _xmlpre += ' xmlns:' + this.options.featureNS + '="' + this._getElementsByTagName(this.options.featureinfo,'xsd:schema')[0].getAttribute('targetNamespace') + '"';
+        _xmlpre += ' xmlns:' + this.options.featureNS + '="' + this._getElementsByTagName(this.options.featureinfo, this.options.xsdNs + ':schema')[0].getAttribute('targetNamespace') + '"';
         _xmlpre += ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"';
-        _xmlpre += ' xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd';
-        _xmlpre += ' ' + this.options.url + '?request=DescribeFeatureType&amp;typename=' + this.options.featureNS + ':' + this.options.featureType;
+        _xmlpre += ' xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/' + this.options.version + '/wfs.xsd';
+        //_xmlpre += ' ' + this.options.url + '?service=WFS&version=' + this.options.version + '&request=DescribeFeatureType&typename=' + this.options.featureNS + ':' + this.options.featureType;
         _xmlpre += '">';
 
         this.options._xmlpre = _xmlpre;
@@ -472,11 +474,11 @@ L.WFST = L.GeoJSON.extend({
     },
 
     _fieldsByAttribute: function(attribute,value,max){
-        var seq = this._getElementsByTagName(this.options.featureinfo,'xsd:sequence')[0];
+        var seq = this._getElementsByTagName(this.options.featureinfo, this.options.xsdNs + ':sequence')[0];
         if(typeof seq == 'undefined'){
             return [];
         }
-        var elems = this._getElementsByTagName(seq,'xsd:element');
+        var elems = this._getElementsByTagName(seq, this.options.xsdNs + ':element');
         var found = [];
 
         var foundVal;
