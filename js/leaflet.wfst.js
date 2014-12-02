@@ -23,6 +23,7 @@ L.WFST = L.GeoJSON.extend({
             // featureType: <Feature Type>
             // primaryKeyField: <The Primary Key field for using when doing deletes and updates>
             // xsdNs: Namespace used in XSD schemas, XSD returned by TinyOWS uses 'xs:' while GeoServer uses 'xsd:'
+            // geoJsonUrl: a URL to use to fetch the geoJson instead of the automatically generated one
         },options);
 
 
@@ -31,6 +32,10 @@ L.WFST = L.GeoJSON.extend({
         if(typeof initOptions.featureType == 'undefined'){ throw "ERROR: featureType not declared"; }
 
         initOptions.typename = initOptions.featureNS + ':' + initOptions.featureType;
+
+        if(typeof initOptions.geoJsonUrl == 'undefined'){ 
+            initOptions.geoJsonUrl = this.options.url + '?service=WFS&version=' + this.options.version + '&request=GetFeature&typeName=' + this.options.featureNS + ':' + this.options.featureType + '&outputFormat=application/json';
+        }
 
         // Call to parent initialize
         L.GeoJSON.prototype.initialize.call(this,geojson,initOptions);
@@ -396,9 +401,8 @@ L.WFST = L.GeoJSON.extend({
     Get all existing objects from the WFS service and draw them
     */
     _loadExistingFeatures: function(){
-        var geoJsonUrl = this.options.url + '?service=WFS&version=' + this.options.version + '&request=GetFeature&typeName=' + this.options.featureNS + ':' + this.options.featureType + '&outputFormat=application/json';
         this._ajax({
-            url: geoJsonUrl,
+            url: this.options.geoJsonUrl,
             success: function(res){
                 res = JSON.parse(res);
                 for(var i = 0,len = res.features.length;i<len;i++){
