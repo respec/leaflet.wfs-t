@@ -404,11 +404,16 @@ L.WFST = L.GeoJSON.extend({
         this._ajax({
             url: this.options.geoJsonUrl,
             success: function(res){
-                res = JSON.parse(res);
-                for(var i = 0,len = res.features.length;i<len;i++){
-                    res.features[i]._wfstSaved = true;
+                try {
+                    res = JSON.parse(res);
+                    for(var i = 0,len = res.features.length;i<len;i++){
+                        res.features[i]._wfstSaved = true;
+                    }
+                    this.self.addData(res.features);
+                } catch (err){
+                    console.log(err); 
+                    return false;
                 }
-                this.self.addData(res.features);
             }
         });
     },
