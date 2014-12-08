@@ -161,7 +161,7 @@ L.WFST = L.GeoJSON.extend({
                     }
 
                     if(typeof realsuccess == 'function'){
-                        realsuccess(res);
+                        realsuccess(res,layer);
                     }
                 }else if(typeof options.failure == 'function'){ 
                     options.failure(res);
@@ -203,7 +203,7 @@ L.WFST = L.GeoJSON.extend({
                         layer.feature = layer.feature || {};
                         layer.feature._wfstSaved = true;
                     }
-                    realsuccess(res);
+                    realsuccess(res,layer);
                 }else if(typeof options.failure == 'function'){ 
                     options.failure(res);
                 }
@@ -249,7 +249,7 @@ L.WFST = L.GeoJSON.extend({
             success: function(res){
                 if(typeof realsuccess == 'function' && self._wfstSuccess(res)){
                     layer.feature._wfstSaved = true;
-                    realsuccess(res);
+                    realsuccess(res,layer);
                 }else if(typeof options.failure == 'function'){ 
                     options.failure(res);
                 }
