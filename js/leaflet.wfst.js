@@ -17,7 +17,10 @@ L.WFST = L.GeoJSON.extend({
             version: "1.1.0",           // WFS version 
             failure: function(msg){},    // Function for handling initialization failures
             xsdNs: 'xsd',
-            circleAsMarker: false        // Treat circles as markers, storing their geometry as a point only. Useful if you've used Leaflet.Draw's pointToLayer to represent points as circles
+            circleAsMarker: false,        // Treat circles as markers, storing their geometry as a point only. Useful if you've used Leaflet.Draw's pointToLayer to represent points as circles
+            setPrimaryKeyOnCreate: true
+            // featureCreatedCallback: function(){} // A function to call after creating a feature
+            // featuredEditedCallback: function(){}
             // geomField : <field_name> // The geometry field to use. Auto-detected if only one geom field 
             // url: <WFS service URL> 
             // featureNS: <Feature NameSpace>
@@ -138,24 +141,28 @@ L.WFST = L.GeoJSON.extend({
         }
 
         var realsuccess;
-        if(typeof options.success == 'function'){
-            realsuccess = options.success;
+        if(typeof this.options.success == 'function'){
+            realsuccess = this.options.success;
         }
 
         options = L.extend(options,{
             success: function(res){
                 var xml = self._wfstSuccess(res);
-                if(typeof realsuccess == 'function' && xml !== false){
+                if(xml !== false){
                     layer.feature = layer.feature || {};
                     layer.feature._wfstSaved = true;
 
-                    // Populate the IDs of the object we just inserted. 
-                    // Since we do one insert at a time, it should always be object 0
-                    var fid = self._getElementsByTagName(xml,'ogc:FeatureId')[0].getAttribute('fid');
-                    layer.feature.id = fid;
-                    layer.feature.properties[self.options.primaryKeyField] = fid.replace(self.options.featureType + '.','');
+                    if(self.options.setPrimaryKeyOnCreate){
+                        // Populate the IDs of the object we just inserted. 
+                        // Since we do one insert at a time, it should always be object 0
+                        var fid = self._getElementsByTagName(xml,'ogc:FeatureId')[0].getAttribute('fid');
+                        layer.feature.id = fid;
+                        layer.feature.properties[self.options.primaryKeyField] = fid.replace(self.options.featureType + '.','');
+                    }
 
-                    realsuccess(res);
+                    if(typeof realsuccess == 'function'){
+                        realsuccess(res);
+                    }
                 }else if(typeof options.failure == 'function'){ 
                     options.failure(res);
                 }
@@ -185,8 +192,8 @@ L.WFST = L.GeoJSON.extend({
         }
 
         var realsuccess;
-        if(typeof options.success == 'function'){
-            realsuccess = options.success;
+        if(typeof this.options.success == 'function'){
+            realsuccess = this.options.success;
         }
 
         options = L.extend(options,{
@@ -234,8 +241,8 @@ L.WFST = L.GeoJSON.extend({
         options = options || {};
 
         var realsuccess;
-        if(typeof options.success == 'function'){
-            realsuccess = options.success;
+        if(typeof this.options.success == 'function'){
+            realsuccess = this.options.success;
         }
 
         options = L.extend(options,{
