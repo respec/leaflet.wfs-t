@@ -26,8 +26,13 @@ L.Path.include(
                 xml += "</gml:Polygon>";
                 return xml;
             } else if (this instanceof L.Polyline) {
-                console.log("GML TODO: L.Polyline"); 
-
+                xml += '<gml:LineString srsName="EPSG:4326">'; 
+                coords = this.gmlCoordPairs(this.getLatLngs());
+                xml += '<gml:coordinates cs="," decimal="." ts=" ">';
+                xml += coords.join(' ');
+                xml += '</gml:coordinates>';
+                xml += "</gml:LineString>";
+                return xml;
             } else if (this instanceof L.Circle){
                 console.log("GML TODO: L.Circle"); 
 

@@ -16,7 +16,8 @@ L.WFST = L.GeoJSON.extend({
             showExisting: true,         // Show existing features in WFST layer on map?
             version: "1.1.0",           // WFS version 
             failure: function(msg){},    // Function for handling initialization failures
-            xsdNs: 'xsd'
+            xsdNs: 'xsd',
+            circleAsMarker: false        // Treat circles as markers, storing their geometry as a point only. Useful if you've used Leaflet.Draw's pointToLayer to represent points as circles
             // geomField : <field_name> // The geometry field to use. Auto-detected if only one geom field 
             // url: <WFS service URL> 
             // featureNS: <Feature NameSpace>
@@ -326,7 +327,9 @@ L.WFST = L.GeoJSON.extend({
                 elems[p].getAttribute('type') === 'gml:GeometryPropertyType' || 
                 elems[p].getAttribute('type') === 'gml:PointPropertyType' || 
                 elems[p].getAttribute('type') === 'gml:MultiSurfacePropertyType' || 
-                elems[p].getAttribute('type') === 'gml:SurfacePropertyType' 
+                elems[p].getAttribute('type') === 'gml:SurfacePropertyType' ||
+                elems[p].getAttribute('type') === 'gml:LineStringPropertyType' ||
+                elems[p].getAttribute('type') === 'gml:MultiLineStringPropertyType'
             ){
                 geomFields.push(elems[p]);
             }else if(elems[p].getAttribute('nillable') == 'false'){
@@ -340,11 +343,17 @@ L.WFST = L.GeoJSON.extend({
         // Only require a geometry field if it looks like we have geometry but we aren't trying to save it
         if(
             (layer.hasOwnProperty('x') && layer.hasOwnProperty('y') && typeof layer.x != 'undefined' && typeof layer.y != 'undefined') ||
-            (layer.hasOwnProperty('_latlng') && Object.keys(layer._latlng).length > 0)
+            (layer.hasOwnProperty('_latlng') && Object.keys(layer._latlng).length > 0) ||
+            (layer.hasOwnProperty('_latlngs') && Object.keys(layer._latlngs).length > 0)
         ){
             if(this.options.geomField || geomFields.length === 1){
                 this.options.geomField = this.options.geomField || geomFields[0].getAttribute('name');
-                field[this.options.geomField] = layer.toGML();
+
+                if(this.options.circleAsMarker && (layer instanceof L.Circle || layer instanceof L.CircleMarker)){
+                    field[this.options.geomField] = L.marker(layer.getLatLng()).toGML();
+                }else{
+                    field[this.options.geomField] = layer.toGML();
+                }
             }else{
                 console.log("No geometry field!");
                 return false;
